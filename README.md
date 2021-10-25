@@ -37,6 +37,7 @@
 - 网络IO线程`Schedulers.io()` 和 UI主线程 `AndroidSchedulers.mainThread()` 切换；
 - 网络异常全局拦截机制；
 - 数据请求和响应数据绑定；
+- Token机制**没有加入**这次的网络框架，
 
 
 
