@@ -39,7 +39,7 @@ class MainActivity : BaseActivity<MainView, MainPresenter>(), MainView {
 
         binding.fab.setOnClickListener { _ ->
             showDialog("开始请求数据")
-            presenter.requestTest()
+            presenter.requestLogout()
         }
     }
 
@@ -66,20 +66,19 @@ class MainActivity : BaseActivity<MainView, MainPresenter>(), MainView {
     }
 
 
-    /**
-     * 案例，没有处理绑定Activity生命周期，需要UI线程更新数据
-     */
-    override fun onSuccess(code: String, message: String) {
-        binding.fab.post {
+    override fun onLoadingDialog(show: Boolean) {
+        if (show) {
+            showDialog()
+        } else {
             dismissDialog()
-            Snackbar.make(binding.fab, message, Snackbar.LENGTH_LONG).setAction("Action", null).show()
         }
     }
 
-    override fun onFailure(code: String, message: String) {
-        binding.fab.post {
-            dismissDialog()
-            Snackbar.make(binding.fab, message, Snackbar.LENGTH_LONG).setAction("Action", null).show()
-        }
+    override fun onSuccess(errorCode: Int, message: String) {
+        Snackbar.make(binding.fab, message, Snackbar.LENGTH_LONG).show()
+    }
+
+    override fun onFailure(errorCode: Int, message: String) {
+        Snackbar.make(binding.fab, message, Snackbar.LENGTH_LONG).show()
     }
 }

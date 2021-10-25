@@ -5,13 +5,15 @@ import com.nick.mpv.frame.base.BaseView
 
 interface MainView : BaseView {
 
-    /**
-     * 成功
-     */
-    fun onSuccess(code: String, message: String)
+    fun onLoadingDialog(show: Boolean)
 
     /**
-     * 失败
+     * 注销成功
      */
-    fun onFailure(code: String, message: String)
+    fun onSuccess(errorCode: Int, message: String)
+
+    /**
+     * 注销失败
+     */
+    fun onFailure(errorCode: Int, message: String)
 }

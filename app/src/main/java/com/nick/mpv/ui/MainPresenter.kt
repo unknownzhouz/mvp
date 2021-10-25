@@ -1,21 +1,24 @@
 package com.nick.mpv.ui
 
 import com.nick.mpv.frame.base.BasePresenterImpl
+import com.nick.mpv.io.response.ResponseImpl
+import com.nick.mpv.repository.Repository
 
 class MainPresenter : BasePresenterImpl<MainView>() {
 
-    /**
-     * 请求请求过程，可以使用RxAndroid对Activity、Fragment的生命周期进行绑定
-     * 这里简单的案例中并没有进行绑定的过程，只是简单的MVP数据响应
-     */
-    fun requestTest() {
-        Thread {
-            try {
-                Thread.sleep(3000)
-                view?.onSuccess("0", " 数据请求成功 ")
-            } catch (e: InterruptedException) {
-                view?.onFailure("2000", "数据异常")
+    fun requestLogout(): Boolean {
+        view?.onLoadingDialog(true)
+        Repository.requestLogout(lifecycleProvider, object : ResponseImpl<Any>() {
+            override fun onSuccess(errorCode: Int, errorMsg: String, data: Any?) {
+                view?.onSuccess(errorCode, errorMsg)
+                view?.onLoadingDialog(false)
             }
-        }.start()
+
+            override fun onFailure(throwable: Throwable?, errorCode: Int, errorMsg: String) {
+                view?.onFailure(errorCode, errorMsg)
+                view?.onLoadingDialog(false)
+            }
+        })
+        return true
     }
 }

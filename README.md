@@ -20,7 +20,7 @@
 
 #### `BaseView`
 
-- 基础V层，因为简化设计框架，不在持有P（P已经在AndBaseActivity进行绑定）；
+- 基础V层，因为简化设计框架，不在持有P（P已经在`AndBaseActivity`进行绑定）；
 - 提供的是空实现
 
 ####  `BasePresenter`
@@ -30,14 +30,25 @@
 
 
 
+### 网络框架建设
+
+- 使用组件 `retrofit2`、`okhttp3`、`RxAndroid` 、`com.trello.rxlifecycle3 ` ；
+- 网络请求层请求绑定监听Activity生命周期，避免内存泄露；
+- 网络IO线程`Schedulers.io()` 和 UI主线程 `AndroidSchedulers.mainThread()` 切换；
+- 网络异常全局拦截机制；
+- 数据请求和响应数据绑定；
+
+
+
 ### 流程案例
 
 - #### 定义接口 V 继承 `BaseView` 
 
   ```kotlin
   interface MainView : BaseView {
-      fun onSuccess(code: String, message: String)  // 获取数据成功
-      fun onFailure(code: String, message: String)  // 获取数据失败
+      fun onLoadingDialog(show: Boolean) // 进度流程
+      fun onSuccess(errorCode: Int, message: String) // 注销成功
+      fun onFailure(errorCode: Int, message: String) // 注销失败
   }
   ```
 
@@ -46,17 +57,21 @@
   ```kotlin
   // P层持有V弱引用, MainView
   class MainPresenter : BasePresenterImpl<MainView>() {
-       fun requestTest() {
-           // Todo 请求数据异步线程
-           Thread {
-              try {
-                  Thread.sleep(3000)
-                  view?.onSuccess("0", " 数据请求成功 ")
-              } catch (e: InterruptedException) {
-                  view?.onFailure("2000", "数据异常")
+      fun requestLogout(): Boolean {
+          view?.onLoadingDialog(true)
+          Repository.requestLogout(lifecycleProvider, object : ResponseImpl<Any>() {
+              override fun onSuccess(errorCode: Int, errorMsg: String, data: Any?) {
+                  view?.onSuccess(errorCode, errorMsg)
+                  view?.onLoadingDialog(false)
               }
-          }.start()
-       }
+  
+              override fun onFailure(throwable: Throwable?, errorCode: Int, errorMsg: String) {
+                  view?.onFailure(errorCode, errorMsg)
+                  view?.onLoadingDialog(false)
+              }
+          })
+          return true
+      }
   }
   ```
 
@@ -68,17 +83,23 @@
   // 根据当前泛型类型，顶层基类创建Presenter实例并和View进行绑定
   class MainActivity : BaseActivity<MainView, MainPresenter>(), MainView {
       fun request(){
-          presenter.requestTest()
+          presenter.requestLogout()
       }
       
-      override fun onSuccess(code: String, message: String) {
-         dismissDialog()
-         Snackbar.make(binding.fab, message, Snackbar.LENGTH_LONG).show()
+      override fun onLoadingDialog(show: Boolean) {
+          if (show) {
+              showDialog("注销账号...")
+          } else {
+              dismissDialog()
+          }
+      }
+      
+      override fun onSuccess(errorCode: Int, message: String) {
+          Snackbar.make(binding.fab, message, Snackbar.LENGTH_LONG).show()
       }
   
-      override fun onFailure(code: String, message: String) {
-         dismissDialog()
-         Snackbar.make(binding.fab, message, Snackbar.LENGTH_LONG).show()
+      override fun onFailure(errorCode: Int, message: String) {
+          Snackbar.make(binding.fab, message, Snackbar.LENGTH_LONG).show()
       }
   }
   ```
