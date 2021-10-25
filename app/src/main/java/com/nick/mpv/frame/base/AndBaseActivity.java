@@ -22,8 +22,7 @@ import io.reactivex.Observable;
 /**
  * Created by zhengz on 2017/6/7.
  */
-public abstract class AndBaseActivity<V extends BaseView, P extends BasePresenter<V>>
-        extends AppCompatActivity implements BaseView, BindContentCallback, BindMVPCallback<V, P>, LifecycleProvider<ActivityEvent> {
+public abstract class AndBaseActivity<V extends BaseView, P extends BasePresenter<V>> extends AppCompatActivity implements BaseView, BindContentCallback, BindMVPCallback<V, P>, LifecycleProvider<ActivityEvent> {
 
     private ActivityDelegate mDelegate = new ActivityDelegate(this, this);
 
